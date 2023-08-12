@@ -1,3 +1,4 @@
+import com.philk7.ipr.reader.XMLFetcher;
 import com.philk7.ipr.reader.XMLReader;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -11,8 +12,10 @@ public class MainClass {
         XMLReader reader = new XMLReader();
 
         reader.initReader("resources/itml.xml");
-        NodeList nodes = reader.getElementsAtXpath("/plist/dict/dict");
-        System.out.println(nodes.getLength());
+
+        XMLFetcher f = new XMLFetcher();
+
+        f.getAllTracks(reader);
 
     }
 }
