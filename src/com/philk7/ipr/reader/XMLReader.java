@@ -50,7 +50,7 @@ public class XMLReader {
         // read objects at XPath as NodeList
         try {
             XPathExpression exp = this.xpath.compile(xpathStr);
-            return (NodeList) exp.evaluate(this.xmlDoc, XPathConstants.NODESET);
+            return (NodeList) exp.evaluate(this.xmlDoc, XPathConstants.NODE);
         }
         catch (XPathExpressionException xpee) {
             System.err.println(xpee.getMessage());

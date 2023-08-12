@@ -10,9 +10,9 @@ public class MainClass {
     public static void main(String[] args) throws ParserConfigurationException, IOException, SAXException {
         XMLReader reader = new XMLReader();
 
-        reader.initReader("../resources/itml.xml");
-        NodeList nodes = reader.getElementsAtXpath("/dict/dict");
-        System.out.println("");
+        reader.initReader("resources/itml.xml");
+        NodeList nodes = reader.getElementsAtXpath("/plist/dict/dict");
+        System.out.println(nodes.getLength());
 
     }
 }
