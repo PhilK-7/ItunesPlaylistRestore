@@ -1,5 +1,6 @@
 package com.philk7.ipr.reader;
 
+import com.philk7.ipr.playlists.Playlist;
 import com.philk7.ipr.tracks.TrackDict;
 import com.philk7.ipr.tracks.TrackInfo;
 import org.w3c.dom.Node;
@@ -65,7 +66,7 @@ public class XMLFetcher {
 
         // fetch all tracks until done
         TrackInfo t;
-        for(int idx = 1; (t = getTrackFromIndex(reader, idx)) != null; idx++)
+        for (int idx = 1; (t = getTrackFromIndex(reader, idx)) != null; idx++)
             tracksList.add(t);
 
         // construct track mapping
@@ -73,5 +74,36 @@ public class XMLFetcher {
         TrackDict mapping = new TrackDict(tracks);
 
         return mapping;
+    }
+
+    public Playlist getPlaylistFromIndex(XMLReader reader, int idx) {
+        // check root node of playlist dict
+        String playlistXpath = "/plist/dict/array/dict[" + idx + "]";
+        Node plKey1 = (Node) reader.getDocElementsAtXpath(playlistXpath + "/key[1]");
+        Node plKey4 = (Node) reader.getDocElementsAtXpath(playlistXpath + "/key[4]");
+        if (!(plKey1.getTextContent().equals("Playlist ID") && plKey4.getTextContent().equals("Name"))) {
+            // only extract user-made playlists
+            System.out.println("Skipping irrelevant system playlist.");
+            return null;
+        }
+
+        // extract relevant playlist info
+        Node idNode = (Node) reader.getDocElementsAtXpath(playlistXpath + "/integer[1]");
+        int id = Integer.parseInt(idNode.getTextContent());
+        Node nameNode = (Node) reader.getDocElementsAtXpath(playlistXpath + "/string[2]");
+        String name = nameNode.getTextContent();
+        // extract all track (reference) IDs
+        Node trackRefNode;
+        List<Integer> trackRefIds = new LinkedList<>();
+        for (int tidx = 1; (trackRefNode = (Node) reader.getDocElementsAtXpath(
+                playlistXpath + "/array/dict[" + tidx + "]/integer")) != null; tidx++) {
+            int trackId = Integer.parseInt(trackRefNode.getTextContent());
+            trackRefIds.add(trackId);
+        }
+
+        // construct track dictionary
+        TrackDict tracksMapping = getAllTracks(reader);
+
+        return new Playlist(id, name, tracksMapping);
     }
 }

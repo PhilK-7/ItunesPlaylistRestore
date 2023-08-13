@@ -15,7 +15,7 @@ public class MainClass {
 
         XMLFetcher f = new XMLFetcher();
 
-        f.getAllTracks(reader);
+        f.getPlaylistFromIndex(reader, 12);
 
     }
 }
