@@ -28,7 +28,7 @@ public class XMLFetcher {
         assert trackNodes.getLength() == 88;
 
         // extract values via node indices
-        // TODO track <dict> elements are sadly inconsistent, reimplement using further xpaths instead of indices
+        // TODO build construct that models entire track dict: all keys, respective value types, counts, paths
         Node idNode = (Node) reader.getDocElementsAtXpath(trackXpath + "/integer[1]");
         int id = Integer.parseInt(idNode.getTextContent());
         Node numNode = (Node) reader.getDocElementsAtXpath(trackXpath + "/integer[6]");
@@ -41,7 +41,14 @@ public class XMLFetcher {
         String name = nameNode.getTextContent();
         Node artistNode = (Node) reader.getDocElementsAtXpath(trackXpath + "/string[4]");
         String artist = artistNode.getTextContent();
-        Node albumNode = (Node) reader.getDocElementsAtXpath(trackXpath + "/string[7]");
+        // position of Album varies
+        Node albumNode;
+        Node aaCheckNode = (Node) reader.getDocElementsAtXpath(trackXpath + "/key[26]");
+        Node compCheckNode = (Node) reader.getDocElementsAtXpath(trackXpath + "/key[29]");
+        if (aaCheckNode.getTextContent().equals("Album Artist") || compCheckNode != null && compCheckNode.getTextContent().equals("Composer"))
+            albumNode = (Node) reader.getDocElementsAtXpath(trackXpath + "/string[7]");
+        else
+            albumNode = (Node) reader.getDocElementsAtXpath(trackXpath + "/string[6]");
         String album = albumNode.getTextContent();
 
         return new TrackInfo(id, num, tracks, year, name, artist, album);
