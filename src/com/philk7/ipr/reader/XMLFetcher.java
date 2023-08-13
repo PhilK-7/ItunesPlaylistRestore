@@ -22,20 +22,27 @@ public class XMLFetcher {
     private TrackInfo getTrackFromIndex(XMLReader reader, int idx) {
         // obtain node list at index (<key>, <integer>, <string> etc.)
         String trackXpath = "/plist/dict/dict/dict[" + idx + "]";
-        NodeList trackNodes = reader.getElementsAtXpath(trackXpath);
+        NodeList trackNodes = (NodeList) reader.getDocElementsAtXpath(trackXpath);
         if (trackNodes == null)
             return null;  // nothing at this index (and at greater indices)
         assert trackNodes.getLength() == 88;
 
         // extract values via node indices
         // TODO track <dict> elements are sadly inconsistent, reimplement using further xpaths instead of indices
-        int id = Integer.parseInt(trackNodes.item(2).getTextContent());
-        short num = Short.parseShort(trackNodes.item(17).getTextContent());
-        short tracks = Short.parseShort(trackNodes.item(20).getTextContent());
-        short year = Short.parseShort(trackNodes.item(23).getTextContent());
-        String name = trackNodes.item(65).getTextContent();
-        String artist = trackNodes.item(68).getTextContent();
-        String album = trackNodes.item(74).getTextContent();
+        Node idNode = (Node) reader.getDocElementsAtXpath(trackXpath + "/integer[1]");
+        int id = Integer.parseInt(idNode.getTextContent());
+        Node numNode = (Node) reader.getDocElementsAtXpath(trackXpath + "/integer[6]");
+        short num = Short.parseShort(numNode.getTextContent());
+        Node tracksNode = (Node) reader.getDocElementsAtXpath(trackXpath + "/integer[7]");
+        short tracks = Short.parseShort(tracksNode.getTextContent());
+        Node yearNode = (Node) reader.getDocElementsAtXpath(trackXpath + "/integer[8]");
+        short year = Short.parseShort(yearNode.getTextContent());
+        Node nameNode = (Node) reader.getDocElementsAtXpath(trackXpath + "/string[3]");
+        String name = nameNode.getTextContent();
+        Node artistNode = (Node) reader.getDocElementsAtXpath(trackXpath + "/string[4]");
+        String artist = artistNode.getTextContent();
+        Node albumNode = (Node) reader.getDocElementsAtXpath(trackXpath + "/string[7]");
+        String album = albumNode.getTextContent();
 
         return new TrackInfo(id, num, tracks, year, name, artist, album);
     }

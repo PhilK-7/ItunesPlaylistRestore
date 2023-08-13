@@ -1,6 +1,7 @@
 package com.philk7.ipr.reader;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -35,11 +36,11 @@ public class XMLReader {
     }
 
     /**
-     *
-     * @param xpathStr
-     * @return
+     * Queries the given absolute XPath in the document and retrieves the elements as node root.
+     * @param xpathStr a XPath expression, absolute from the document root
+     * @return the resulting root node as Object (should be casted to Node/NodeList)
      */
-    public NodeList getElementsAtXpath(String xpathStr) {
+    public Object getDocElementsAtXpath(String xpathStr) {
 
         // make sure that needed objects are initialized
         if(this.xmlDoc == null || this.xpath == null) {
@@ -50,7 +51,7 @@ public class XMLReader {
         // read objects at XPath as NodeList
         try {
             XPathExpression exp = this.xpath.compile(xpathStr);
-            return (NodeList) exp.evaluate(this.xmlDoc, XPathConstants.NODE);
+            return exp.evaluate(this.xmlDoc, XPathConstants.NODE);
         }
         catch (XPathExpressionException xpee) {
             System.err.println(xpee.getMessage());
@@ -58,4 +59,5 @@ public class XMLReader {
         }
 
     }
+
 }
