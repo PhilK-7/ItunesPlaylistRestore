@@ -85,9 +85,10 @@ public class XMLFetcher {
      *
      * @param reader an XMLReader object (initialized on an XML document)
      * @param idx    an index (starting at 1) in the array of playlists
+     * @param allTracks a track dictionary containing all known tracks
      * @return a playlist object, if a user-made playlist exists at the given index, or null
      */
-    public Playlist getPlaylistFromIndex(XMLReader reader, int idx) {
+    public Playlist getPlaylistFromIndex(XMLReader reader, int idx, TrackDict allTracks) {
         // check root node of playlist dict
         String playlistXpath = "/plist/dict/array/dict[" + idx + "]";
         Node plKey1 = (Node) reader.getDocElementsAtXpath(playlistXpath + "/key[1]");
@@ -118,9 +119,8 @@ public class XMLFetcher {
             trackRefIds.add(trackId);
         }
 
-        // construct track dictionary
-        TrackDict tracksMapping = getAllTracks(reader);
-        // TODO call getAllTracks one time globally, and then pick the playlist tracks using trackRefIds
+        // construct playlist track dictionary
+        TrackDict tracksMapping = allTracks.filterTrackDictWithIds(trackRefIds);
 
         return new Playlist(id, name, tracksMapping);
     }
@@ -129,16 +129,17 @@ public class XMLFetcher {
      * Retrieves every user-made playlist, and returns a dictionary of those.
      *
      * @param reader an XMLReader object (initialized on an XML document)
+     * @param allTracks a track dictionary containing all known tracks
      * @return a playlist dictionary that maps playlists´ IDs and their respective playlist objects
      */
-    public PlaylistDict getAllPlaylists(XMLReader reader) {
+    public PlaylistDict getAllPlaylists(XMLReader reader, TrackDict allTracks) {
         List<Playlist> playlists = new LinkedList<>();
         int plIdx = 1;
 
         // skip system playlists
         Playlist currentPlaylist = null;
         while (currentPlaylist == null)
-            currentPlaylist = getPlaylistFromIndex(reader, plIdx++);
+            currentPlaylist = getPlaylistFromIndex(reader, plIdx++, allTracks);
 
         // points to first user-made playlist
         System.out.println("The first user-made playlist was found at index " + plIdx + ".");
@@ -146,7 +147,7 @@ public class XMLFetcher {
         // retrieve every user-made playlist
         while (currentPlaylist != null) {
             playlists.add(currentPlaylist);  // start at first user-made playlist
-            currentPlaylist = getPlaylistFromIndex(reader, ++plIdx);
+            currentPlaylist = getPlaylistFromIndex(reader, ++plIdx, allTracks);
         }
 
         return new PlaylistDict(playlists.toArray(new Playlist[0]));
