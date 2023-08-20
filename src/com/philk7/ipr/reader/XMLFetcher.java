@@ -48,7 +48,8 @@ public class XMLFetcher {
         Node albumNode;
         Node aaCheckNode = (Node) reader.getDocElementsAtXpath(trackXpath + "/key[26]");
         Node compCheckNode = (Node) reader.getDocElementsAtXpath(trackXpath + "/key[29]");
-        if (aaCheckNode.getTextContent().equals("Album Artist") || compCheckNode != null && compCheckNode.getTextContent().equals("Composer"))
+        if (aaCheckNode.getTextContent().equals("Album Artist") ||
+                compCheckNode != null && compCheckNode.getTextContent().equals("Composer"))
             albumNode = (Node) reader.getDocElementsAtXpath(trackXpath + "/string[7]");
         else
             albumNode = (Node) reader.getDocElementsAtXpath(trackXpath + "/string[6]");
@@ -78,13 +79,21 @@ public class XMLFetcher {
         return mapping;
     }
 
+
+    /**
+     * Retrieves a user-made playlist, if exists, at a specific index.
+     *
+     * @param reader an XMLReader object (initialized on an XML document)
+     * @param idx    an index (starting at 1) in the array of playlists
+     * @return a playlist object, if a user-made playlist exists at the given index, or null
+     */
     public Playlist getPlaylistFromIndex(XMLReader reader, int idx) {
         // check root node of playlist dict
         String playlistXpath = "/plist/dict/array/dict[" + idx + "]";
         Node plKey1 = (Node) reader.getDocElementsAtXpath(playlistXpath + "/key[1]");
         Node plKey4 = (Node) reader.getDocElementsAtXpath(playlistXpath + "/key[4]");
         // nothing at all at this playlist index -> end
-        if(plKey1 == null && plKey4 == null) {
+        if (plKey1 == null || plKey4 == null) {
             System.out.println("The end of the playlists array was reached.");
             return null;
         }
@@ -111,17 +120,24 @@ public class XMLFetcher {
 
         // construct track dictionary
         TrackDict tracksMapping = getAllTracks(reader);
+        // TODO call getAllTracks one time globally, and then pick the playlist tracks using trackRefIds
 
         return new Playlist(id, name, tracksMapping);
     }
 
+    /**
+     * Retrieves every user-made playlist, and returns a dictionary of those.
+     *
+     * @param reader an XMLReader object (initialized on an XML document)
+     * @return a playlist dictionary that maps playlists´ IDs and their respective playlist objects
+     */
     public PlaylistDict getAllPlaylists(XMLReader reader) {
         List<Playlist> playlists = new LinkedList<>();
         int plIdx = 1;
 
         // skip system playlists
         Playlist currentPlaylist = null;
-        while(currentPlaylist == null)
+        while (currentPlaylist == null)
             currentPlaylist = getPlaylistFromIndex(reader, plIdx++);
 
         // points to first user-made playlist
