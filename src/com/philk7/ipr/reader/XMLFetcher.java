@@ -1,11 +1,13 @@
 package com.philk7.ipr.reader;
 
 import com.philk7.ipr.playlists.Playlist;
+import com.philk7.ipr.playlists.PlaylistDict;
 import com.philk7.ipr.tracks.TrackDict;
 import com.philk7.ipr.tracks.TrackInfo;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -81,6 +83,12 @@ public class XMLFetcher {
         String playlistXpath = "/plist/dict/array/dict[" + idx + "]";
         Node plKey1 = (Node) reader.getDocElementsAtXpath(playlistXpath + "/key[1]");
         Node plKey4 = (Node) reader.getDocElementsAtXpath(playlistXpath + "/key[4]");
+        // nothing at all at this playlist index -> end
+        if(plKey1 == null && plKey4 == null) {
+            System.out.println("The end of the playlists array was reached.");
+            return null;
+        }
+        // user-made playlists have ID at element #1 and name at element #4
         if (!(plKey1.getTextContent().equals("Playlist ID") && plKey4.getTextContent().equals("Name"))) {
             // only extract user-made playlists
             System.out.println("Skipping irrelevant system playlist.");
@@ -105,5 +113,26 @@ public class XMLFetcher {
         TrackDict tracksMapping = getAllTracks(reader);
 
         return new Playlist(id, name, tracksMapping);
+    }
+
+    public PlaylistDict getAllPlaylists(XMLReader reader) {
+        List<Playlist> playlists = new LinkedList<>();
+        int plIdx = 1;
+
+        // skip system playlists
+        Playlist currentPlaylist = null;
+        while(currentPlaylist == null)
+            currentPlaylist = getPlaylistFromIndex(reader, plIdx++);
+
+        // points to first user-made playlist
+        System.out.println("The first user-made playlist was found at index " + plIdx + ".");
+
+        // retrieve every user-made playlist
+        while (currentPlaylist != null) {
+            playlists.add(currentPlaylist);  // start at first user-made playlist
+            currentPlaylist = getPlaylistFromIndex(reader, ++plIdx);
+        }
+
+        return new PlaylistDict(playlists.toArray(new Playlist[0]));
     }
 }
